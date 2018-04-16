@@ -769,6 +769,19 @@ namespace S7.Net.UnitTest
             Assert.IsTrue(reachablePlc.IsAvailable);
         }
 
+        [TestMethod]
+        public void T26_ReadWriteDouble()
+        {
+            double test_value = 55.66;
+            plc.Write("DB1.DBD0", test_value);
+            Assert.AreEqual(plc.LastErrorCode, ErrorCode.NoError, "Write Double");
+            var helper = plc.Read("DB1.DBD0");
+            double test_value2 = Conversion.ConvertToDouble((uint)helper);
+
+            Assert.AreEqual(plc.LastErrorCode, ErrorCode.NoError, "Read Double");
+            Assert.AreEqual(test_value, test_value2, 0.01, "Compare Write/Read"); //Need delta here because S7 only has 32 bit reals
+        }
+
         #endregion
 
         #region Private methods
