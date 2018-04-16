@@ -782,6 +782,28 @@ namespace S7.Net.UnitTest
             Assert.AreEqual(test_value, test_value2, 0.01, "Compare Write/Read"); //Need delta here because S7 only has 32 bit reals
         }
 
+        [TestMethod]
+        public void T27_ReadWriteBytesMany()
+        {
+            Assert.IsTrue(plc.IsConnected, "Before executing this test, the plc must be connected. Check constructor.");
+
+            var count = 2000;
+            var dataItems = new List<byte>();
+            for (int i = 0; i < count; i++)
+            {
+                dataItems.Add((byte)(i%256));
+            }
+
+            plc.WriteBytes(DataType.DataBlock, 2, 0, dataItems.ToArray());
+
+            var res = plc.ReadBytes(DataType.DataBlock, 2, 0, count);
+
+            for (int x = 0; x < count; x++) 
+            {
+                Assert.AreEqual(x % 256, res[x]);
+            }
+        }
+
         #endregion
 
         #region Private methods
