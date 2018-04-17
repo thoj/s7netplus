@@ -50,7 +50,6 @@ namespace S7.Net
             public static TPDU Read(Socket socket)
             {
                 var tpkt = TPKT.Read(socket);
-                Console.WriteLine(tpkt);
                 if (tpkt.Length > 0) return new TPDU(tpkt);
                 return null;
             }
