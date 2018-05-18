@@ -172,7 +172,7 @@ namespace S7.Net
                 return LastErrorCode;
             }
 
-            try 
+            try
             {
                 byte[] bSend1 = {
                     3, 0, 0, 22, //TPKT
@@ -246,6 +246,7 @@ namespace S7.Net
                         return ErrorCode.WrongCPU_Type;
                 }
 
+                //COTP Setup
                 _mSocket.Send(bSend1, 22, SocketFlags.None);
 
                 var response = COTP.TPDU.Read(_mSocket);
@@ -267,15 +268,15 @@ namespace S7.Net
                     throw new Exception(ErrorCode.WrongNumberReceivedBytes.ToString());
                 }
                 MaxPDUSize = (short)(s7data[18] * 256 + s7data[19]);
+
+                return ErrorCode.NoError;
             }
-            catch(Exception exc)
+            catch (Exception exc)
             {
                 LastErrorCode = ErrorCode.ConnectionError;
                 LastErrorString = string.Format("Couldn't establish the connection to {0}.\nMessage: {1}", IP, exc.Message);
                 return ErrorCode.ConnectionError;
             }
-
-            return ErrorCode.NoError;
         }
 
         /// <summary>
@@ -309,7 +310,6 @@ namespace S7.Net
                 throw new Exception("Too many vars requested");
             if (cntBytes > 222)
                 throw new Exception("Too many bytes requested"); // TODO: proper TDU check + split in multiple requests
-
             try
             {
                 // first create the header
@@ -328,20 +328,30 @@ namespace S7.Net
                 if (s7data == null || s7data[14] != 0xff)
                     throw new Exception(ErrorCode.WrongNumberReceivedBytes.ToString());
 
-                int offset = 18;
+                int offset = 14;
                 foreach (var dataItem in dataItems)
                 {
+                    // check for Return Code = Success
+                    if (s7data[offset] != 0xff)
+                        throw new Exception(ErrorCode.WrongNumberReceivedBytes.ToString());
+
+                    // to Data bytes
+                    offset += 4;
+
                     int byteCnt = VarTypeToByteLength(dataItem.VarType, dataItem.Count);
-                    byte[] bytes = new byte[byteCnt];
+                    dataItem.Value = ParseBytes(
+                        dataItem.VarType,
+                        s7data.Skip(offset).Take(byteCnt).ToArray(),
+                        dataItem.Count,
+                        dataItem.BitAdr
+                    );
 
-                    for (int i = 0; i < byteCnt; i++)
-                    {
-                        bytes[i] = s7data[i + offset];
-                    }
+                    // next Item
+                    offset += byteCnt;
 
-                    offset += byteCnt + 4;
-
-                    dataItem.Value = ParseBytes(dataItem.VarType, bytes, dataItem.Count);
+                    // Fill byte in response when bytecount is odd
+                    if (dataItem.Count % 2 != 0 && (dataItem.VarType == VarType.Byte || dataItem.VarType == VarType.Bit))
+                        offset++;
                 }
             }
             catch (SocketException socketException)
@@ -850,10 +860,7 @@ namespace S7.Net
                                 {
                                     return Write(DataType.DataBlock, mDB, dbIndex, value);
                                 }
-                                else
-                                {
-                                    objValue = Convert.ChangeType(value, typeof(UInt32));
-                                }
+                                objValue = Convert.ChangeType(value, typeof(UInt32));                                
                                 return Write(DataType.DataBlock, mDB, dbIndex, (UInt32)objValue);
                             case "DBX":
                                 mByte = dbIndex;
@@ -1069,8 +1076,6 @@ namespace S7.Net
 
         private byte[] ReadBytesWithASingleRequest(DataType dataType, int db, int startByteAdr, int count)
         {
-            byte[] bytes = new byte[count];
-
             try
             {
                 // first create the header
@@ -1086,10 +1091,7 @@ namespace S7.Net
                 if (s7data == null || s7data[14] != 0xff)
                     throw new Exception(ErrorCode.WrongNumberReceivedBytes.ToString());
 
-                for (int cnt = 0; cnt < count; cnt++)
-                    bytes[cnt] = s7data[cnt + 18];
-
-                return bytes;
+                return s7data.Skip(18).Take(count).ToArray();
             }
             catch (SocketException socketException)
             {
@@ -1116,9 +1118,7 @@ namespace S7.Net
         /// <returns>NoError if it was successful, or the error is specified</returns>
         private ErrorCode WriteBytesWithASingleRequest(DataType dataType, int db, int startByteAdr, byte[] value)
         {
-            byte[] bReceive = new byte[513];
             int varCount = 0;
-
             try
             {
                 varCount = value.Length;
@@ -1165,7 +1165,6 @@ namespace S7.Net
 
         private ErrorCode WriteBitWithASingleRequest(DataType dataType, int db, int startByteAdr, int bitAdr, bool bitValue)
         {
-            byte[] bReceive = new byte[513];
             int varCount = 0;
 
             try
@@ -1321,23 +1320,53 @@ namespace S7.Net
             }
         }
 
-        #region IDisposable members
+        #region IDisposable Support
+        private bool disposedValue = false; // To detect redundant calls
 
+        /// <summary>
+        /// Releases all resources, disonnects from the PLC and closes the <see cref="Socket"/>
+        /// </summary>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    // TODO: dispose managed state (managed objects).
+                    if (_mSocket != null)
+                    {
+                        if (_mSocket.Connected)
+                        {
+                            _mSocket.Shutdown(SocketShutdown.Both);
+                            _mSocket.Close();
+                        }
+                    }
+                }
+
+                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
+                // TODO: set large fields to null.
+
+                disposedValue = true;
+            }
+        }
+
+        // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
+        // ~Plc() {
+        //   // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+        //   Dispose(false);
+        // }
+
+        // This code added to correctly implement the disposable pattern.
         /// <summary>
         /// Releases all resources, disonnects from the PLC and closes the <see cref="Socket"/>
         /// </summary>
         public void Dispose()
         {
-            if (_mSocket != null)
-            {
-                if (_mSocket.Connected)
-                {
-                    _mSocket.Shutdown(SocketShutdown.Both);
-                    _mSocket.Close();
-                }
-            }
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(true);
+            // TODO: uncomment the following line if the finalizer is overridden above.
+            // GC.SuppressFinalize(this);
         }
-
         #endregion
     }
 }

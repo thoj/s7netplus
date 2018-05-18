@@ -80,7 +80,6 @@ namespace S7.Net
             public static byte[] Read(Socket socket)
             {                
                 var segment = TPDU.Read(socket);
-
                 if (segment == null) return null;
 
                 var output = new MemoryStream(segment.Data.Length);
