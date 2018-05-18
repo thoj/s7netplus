@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
 using System.Net.Sockets;
+using System.Threading.Tasks;
+using System.Linq;
 
 namespace S7.Net
 {
@@ -54,6 +56,19 @@ namespace S7.Net
                 return null;
             }
 
+            /// <summary>
+            /// Reads COTP TPDU (Transport protocol data unit) from the network stream
+            /// See: https://tools.ietf.org/html/rfc905
+            /// </summary>
+            /// <param name="socket">The socket to read from</param>
+            /// <returns>COTP DPDU instance</returns>
+            public static async Task<TPDU> ReadAsync(Socket socket)
+            {
+                var tpkt = await TPKT.ReadAsync(socket);
+                if (tpkt.Length > 0) return new TPDU(tpkt);
+                return null;
+            }
+
             public override string ToString()
             {
                 return string.Format("Length: {0} PDUType: {1} TPDUNumber: {2} Last: {3} Segment Data: {4}",
@@ -76,10 +91,11 @@ namespace S7.Net
             /// Reads the full COTP TSDU (Transport service data unit)
             /// See: https://tools.ietf.org/html/rfc905
             /// </summary>
+            /// <param name="Socket">The stream to read from</param>
             /// <returns>Data in TSDU</returns>
-            public static byte[] Read(Socket socket)
-            {                
-                var segment = TPDU.Read(socket);
+            public static byte[] Read(Socket Socket)
+            {
+                var segment = TPDU.Read(Socket);
                 if (segment == null) return null;
 
                 var output = new MemoryStream(segment.Data.Length);
@@ -87,10 +103,32 @@ namespace S7.Net
 
                 while (!segment.LastDataUnit)
                 {
-                    segment = TPDU.Read(socket);
+                    segment = TPDU.Read(Socket);
                     output.Write(segment.Data, (int)output.Position, segment.Data.Length);
                 }
-                return output.GetBuffer();
+                return output.GetBuffer().Take((int)output.Position).ToArray();
+            }
+
+            /// <summary>
+            /// Reads the full COTP TSDU (Transport service data unit)
+            /// See: https://tools.ietf.org/html/rfc905
+            /// </summary>
+            /// <param name="socket">The stream to read from</param>
+            /// <returns>Data in TSDU</returns>
+            public static async Task<byte[]> ReadAsync(Socket socket)
+            {                
+                var segment = await TPDU.ReadAsync(socket);
+                if (segment == null) return null;
+
+                var output = new MemoryStream(segment.Data.Length);
+                output.Write(segment.Data, 0, segment.Data.Length);
+
+                while (!segment.LastDataUnit)
+                {
+                    segment = await TPDU.ReadAsync(socket);
+                    output.Write(segment.Data, (int)output.Position, segment.Data.Length);
+                }
+                return output.GetBuffer().Take((int)output.Position).ToArray();
             }
         }
     }

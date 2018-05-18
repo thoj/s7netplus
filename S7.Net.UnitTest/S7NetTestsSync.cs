@@ -30,10 +30,13 @@ using S7.UnitTest.Helpers;
  * server has problems.
  *
  */
+
+//This file contains tests for the obsolete synchronous methods
+#pragma warning disable CS0618
 namespace S7.Net.UnitTest
 {
     [TestClass]
-    public class S7NetTests
+    public partial class S7NetTests : IDisposable
     {
         #region Constants
         const int DB2 = 2;
@@ -159,13 +162,15 @@ namespace S7.Net.UnitTest
         {
             Assert.IsTrue(plc.IsConnected, "Before executing this test, the plc must be connected. Check constructor.");
 
-            TestClass tc = new TestClass();
-            tc.BitVariable00 = true;
-            tc.BitVariable10 = true;
-            tc.DIntVariable = -100000;
-            tc.IntVariable = -15000;
-            tc.RealVariable = -154.789;
-            tc.DWordVariable = 850;
+            TestClass tc = new TestClass
+            {
+                BitVariable00 = true,
+                BitVariable10 = true,
+                DIntVariable = -100000,
+                IntVariable = -15000,
+                RealVariable = -154.789,
+                DWordVariable = 850
+            };
             plc.WriteClass(tc, DB2);
             TestClass tc2 = new TestClass();
             // Values that are read from a class are stored inside the class itself, that is passed by reference
@@ -186,13 +191,15 @@ namespace S7.Net.UnitTest
         {
             Assert.IsTrue(plc.IsConnected, "Before executing this test, the plc must be connected. Check constructor.");
 
-            TestStruct tc = new TestStruct();
-            tc.BitVariable00 = true;
-            tc.BitVariable10 = true;
-            tc.DIntVariable = -100000;
-            tc.IntVariable = -15000;
-            tc.RealVariable = -154.789;
-            tc.DWordVariable = 850;
+            TestStruct tc = new TestStruct
+            {
+                BitVariable00 = true,
+                BitVariable10 = true,
+                DIntVariable = -100000,
+                IntVariable = -15000,
+                RealVariable = -154.789,
+                DWordVariable = 850
+            };
             plc.WriteStruct(tc, DB2);
             // Values that are read from a struct are stored in a new struct, returned by the funcion ReadStruct
             TestStruct tc2 = (TestStruct)plc.ReadStruct(typeof(TestStruct), DB2);
@@ -212,56 +219,58 @@ namespace S7.Net.UnitTest
         {
             Assert.IsTrue(plc.IsConnected, "Before executing this test, the plc must be connected. Check constructor.");
 
-            TestLongStruct tc = new TestLongStruct();
-            tc.IntVariable0 = 0;
-            tc.IntVariable1 = 1;
-            tc.IntVariable10 = 10;
-            tc.IntVariable11 = 11;
-            tc.IntVariable20 = 20;
-            tc.IntVariable21 = 21;
-            tc.IntVariable30 = 30;
-            tc.IntVariable31 = 31;
-            tc.IntVariable40 = 40;
-            tc.IntVariable41 = 41;
-            tc.IntVariable50 = 50;
-            tc.IntVariable51 = 51;
-            tc.IntVariable60 = 60;
-            tc.IntVariable61 = 61;
-            tc.IntVariable70 = 70;
-            tc.IntVariable71 = 71;
-            tc.IntVariable80 = 80;
-            tc.IntVariable81 = 81;
-            tc.IntVariable90 = 90;
-            tc.IntVariable91 = 91;
-            tc.IntVariable100 = 100;
-            tc.IntVariable101 = 101;
-            tc.IntVariable110 = 200;
-            tc.IntVariable111 = 201;
+            TestLongStruct tc = new TestLongStruct
+            {
+                IntVariable0 = 0,
+                IntVariable1 = 1,
+                IntVariable10 = 10,
+                IntVariable11 = 11,
+                IntVariable20 = 20,
+                IntVariable21 = 21,
+                IntVariable30 = 30,
+                IntVariable31 = 31,
+                IntVariable40 = 40,
+                IntVariable41 = 41,
+                IntVariable50 = 50,
+                IntVariable51 = 51,
+                IntVariable60 = 60,
+                IntVariable61 = 61,
+                IntVariable70 = 70,
+                IntVariable71 = 71,
+                IntVariable80 = 80,
+                IntVariable81 = 81,
+                IntVariable90 = 90,
+                IntVariable91 = 91,
+                IntVariable100 = 100,
+                IntVariable101 = 101,
+                IntVariable110 = 200,
+                IntVariable111 = 201
+            };
             plc.WriteStruct(tc, DB2);
             Assert.AreEqual(ErrorCode.NoError, plc.LastErrorCode);
             // Values that are read from a struct are stored in a new struct, returned by the funcion ReadStruct
             TestLongStruct tc2 = (TestLongStruct)plc.ReadStruct(typeof(TestLongStruct), DB2);
             Assert.AreEqual(ErrorCode.NoError, plc.LastErrorCode);
-            Assert.AreEqual( tc.IntVariable0,     tc2.IntVariable0 );
-            Assert.AreEqual( tc.IntVariable1,     tc2.IntVariable1 );
-            Assert.AreEqual( tc.IntVariable10, tc2.IntVariable10);
-            Assert.AreEqual( tc.IntVariable11, tc2.IntVariable11);
-            Assert.AreEqual( tc.IntVariable20, tc2.IntVariable20);
-            Assert.AreEqual( tc.IntVariable21, tc2.IntVariable21);
-            Assert.AreEqual( tc.IntVariable30, tc2.IntVariable30);
-            Assert.AreEqual( tc.IntVariable31, tc2.IntVariable31);
-            Assert.AreEqual( tc.IntVariable40, tc2.IntVariable40);
-            Assert.AreEqual( tc.IntVariable41, tc2.IntVariable41);
-            Assert.AreEqual( tc.IntVariable50, tc2.IntVariable50);
-            Assert.AreEqual( tc.IntVariable51, tc2.IntVariable51);
-            Assert.AreEqual( tc.IntVariable60, tc2.IntVariable60);
-            Assert.AreEqual( tc.IntVariable61, tc2.IntVariable61);
-            Assert.AreEqual( tc.IntVariable70, tc2.IntVariable70);
-            Assert.AreEqual( tc.IntVariable71, tc2.IntVariable71);
-            Assert.AreEqual( tc.IntVariable80, tc2.IntVariable80);
-            Assert.AreEqual( tc.IntVariable81, tc2.IntVariable81);
-            Assert.AreEqual( tc.IntVariable90, tc2.IntVariable90);
-            Assert.AreEqual(tc.IntVariable91,  tc2.IntVariable91);
+            Assert.AreEqual(tc.IntVariable0, tc2.IntVariable0);
+            Assert.AreEqual(tc.IntVariable1, tc2.IntVariable1);
+            Assert.AreEqual(tc.IntVariable10, tc2.IntVariable10);
+            Assert.AreEqual(tc.IntVariable11, tc2.IntVariable11);
+            Assert.AreEqual(tc.IntVariable20, tc2.IntVariable20);
+            Assert.AreEqual(tc.IntVariable21, tc2.IntVariable21);
+            Assert.AreEqual(tc.IntVariable30, tc2.IntVariable30);
+            Assert.AreEqual(tc.IntVariable31, tc2.IntVariable31);
+            Assert.AreEqual(tc.IntVariable40, tc2.IntVariable40);
+            Assert.AreEqual(tc.IntVariable41, tc2.IntVariable41);
+            Assert.AreEqual(tc.IntVariable50, tc2.IntVariable50);
+            Assert.AreEqual(tc.IntVariable51, tc2.IntVariable51);
+            Assert.AreEqual(tc.IntVariable60, tc2.IntVariable60);
+            Assert.AreEqual(tc.IntVariable61, tc2.IntVariable61);
+            Assert.AreEqual(tc.IntVariable70, tc2.IntVariable70);
+            Assert.AreEqual(tc.IntVariable71, tc2.IntVariable71);
+            Assert.AreEqual(tc.IntVariable80, tc2.IntVariable80);
+            Assert.AreEqual(tc.IntVariable81, tc2.IntVariable81);
+            Assert.AreEqual(tc.IntVariable90, tc2.IntVariable90);
+            Assert.AreEqual(tc.IntVariable91, tc2.IntVariable91);
             Assert.AreEqual(tc.IntVariable100, tc2.IntVariable100);
             Assert.AreEqual(tc.IntVariable101, tc2.IntVariable101);
             Assert.AreEqual(tc.IntVariable110, tc2.IntVariable110);
@@ -276,31 +285,33 @@ namespace S7.Net.UnitTest
         {
             Assert.IsTrue(plc.IsConnected, "Before executing this test, the plc must be connected. Check constructor.");
 
-            TestLongClass tc = new TestLongClass();
-            tc.IntVariable0 = 0;
-            tc.IntVariable1 = 1;
-            tc.IntVariable10 = 10;
-            tc.IntVariable11 = 11;
-            tc.IntVariable20 = 20;
-            tc.IntVariable21 = 21;
-            tc.IntVariable30 = 30;
-            tc.IntVariable31 = 31;
-            tc.IntVariable40 = 40;
-            tc.IntVariable41 = 41;
-            tc.IntVariable50 = 50;
-            tc.IntVariable51 = 51;
-            tc.IntVariable60 = 60;
-            tc.IntVariable61 = 61;
-            tc.IntVariable70 = 70;
-            tc.IntVariable71 = 71;
-            tc.IntVariable80 = 80;
-            tc.IntVariable81 = 81;
-            tc.IntVariable90 = 90;
-            tc.IntVariable91 = 91;
-            tc.IntVariable100 = 100;
-            tc.IntVariable101 = 101;
-            tc.IntVariable110 = 200;
-            tc.IntVariable111 = 201;
+            TestLongClass tc = new TestLongClass
+            {
+                IntVariable0 = 0,
+                IntVariable1 = 1,
+                IntVariable10 = 10,
+                IntVariable11 = 11,
+                IntVariable20 = 20,
+                IntVariable21 = 21,
+                IntVariable30 = 30,
+                IntVariable31 = 31,
+                IntVariable40 = 40,
+                IntVariable41 = 41,
+                IntVariable50 = 50,
+                IntVariable51 = 51,
+                IntVariable60 = 60,
+                IntVariable61 = 61,
+                IntVariable70 = 70,
+                IntVariable71 = 71,
+                IntVariable80 = 80,
+                IntVariable81 = 81,
+                IntVariable90 = 90,
+                IntVariable91 = 91,
+                IntVariable100 = 100,
+                IntVariable101 = 101,
+                IntVariable110 = 200,
+                IntVariable111 = 201
+            };
             plc.WriteClass(tc, DB2);
             Assert.AreEqual(ErrorCode.NoError, plc.LastErrorCode);
             // Values that are read from a struct are stored in a new struct, returned by the funcion ReadStruct
@@ -548,13 +559,15 @@ namespace S7.Net.UnitTest
         {
             Assert.IsTrue(plc.IsConnected, "Before executing this test, the plc must be connected. Check constructor.");
 
-            TestClassWithPrivateSetters tc = new TestClassWithPrivateSetters();
-            tc.BitVariable00 = true;
-            tc.BitVariable10 = true;
-            tc.DIntVariable = -100000;
-            tc.IntVariable = -15000;
-            tc.RealVariable = -154.789;
-            tc.DWordVariable = 850;
+            TestClassWithPrivateSetters tc = new TestClassWithPrivateSetters
+            {
+                BitVariable00 = true,
+                BitVariable10 = true,
+                DIntVariable = -100000,
+                IntVariable = -15000,
+                RealVariable = -154.789,
+                DWordVariable = 850
+            };
 
             plc.WriteClass(tc, DB2);
 
@@ -596,13 +609,15 @@ namespace S7.Net.UnitTest
         {
             Assert.IsTrue(plc.IsConnected, "Before executing this test, the plc must be connected. Check constructor.");
 
-            TestClass tc = new TestClass();
-            tc.BitVariable00 = true;
-            tc.BitVariable10 = true;
-            tc.DIntVariable = -100000;
-            tc.IntVariable = -15000;
-            tc.RealVariable = -154.789;
-            tc.DWordVariable = 850;
+            TestClass tc = new TestClass
+            {
+                BitVariable00 = true,
+                BitVariable10 = true,
+                DIntVariable = -100000,
+                IntVariable = -15000,
+                RealVariable = -154.789,
+                DWordVariable = 850
+            };
 
             plc.WriteClass(tc, DB2);
 
@@ -637,13 +652,15 @@ namespace S7.Net.UnitTest
         {
             Assert.IsTrue(plc.IsConnected, "Before executing this test, the plc must be connected. Check constructor.");
 
-            TestClass tc = new TestClass();
-            tc.BitVariable00 = true;
-            tc.BitVariable10 = true;
-            tc.DIntVariable = -100000;
-            tc.IntVariable = -15000;
-            tc.RealVariable = -154.789;
-            tc.DWordVariable = 850;
+            TestClass tc = new TestClass
+            {
+                BitVariable00 = true,
+                BitVariable10 = true,
+                DIntVariable = -100000,
+                IntVariable = -15000,
+                RealVariable = -154.789,
+                DWordVariable = 850
+            };
 
             plc.WriteClass(tc, DB2);
 
@@ -690,13 +707,15 @@ namespace S7.Net.UnitTest
         {
             Assert.IsTrue(plc.IsConnected, "Before executing this test, the plc must be connected. Check constructor.");
 
-            TestStruct ts = new TestStruct();
-            ts.BitVariable00 = true;
-            ts.BitVariable10 = true;
-            ts.DIntVariable = -100000;
-            ts.IntVariable = -15000;
-            ts.RealVariable = -154.789;
-            ts.DWordVariable = 850;
+            TestStruct ts = new TestStruct
+            {
+                BitVariable00 = true,
+                BitVariable10 = true,
+                DIntVariable = -100000,
+                IntVariable = -15000,
+                RealVariable = -154.789,
+                DWordVariable = 850
+            };
 
             plc.WriteStruct(ts, DB2);
 
@@ -733,13 +752,15 @@ namespace S7.Net.UnitTest
         {
             Assert.IsTrue(plc.IsConnected, "Before executing this test, the plc must be connected. Check constructor.");
 
-            TestClass tc = new TestClass();
-            tc.BitVariable00 = true;
-            tc.BitVariable10 = true;
-            tc.DIntVariable = -100000;
-            tc.IntVariable = -15000;
-            tc.RealVariable = -154.789;
-            tc.DWordVariable = 850;
+            TestClass tc = new TestClass
+            {
+                BitVariable00 = true,
+                BitVariable10 = true,
+                DIntVariable = -100000,
+                IntVariable = -15000,
+                RealVariable = -154.789,
+                DWordVariable = 850
+            };
             plc.WriteClass(tc, DB2);
 
             int expectedReadBytes = Types.Class.GetClassSize(tc);
@@ -750,14 +771,16 @@ namespace S7.Net.UnitTest
 
             Assert.AreEqual(expectedReadBytes, actualReadBytes);
         }
-        
+
         [TestMethod]
         public void T22_ReadClassWithArray()
         {
             Assert.IsTrue(plc.IsConnected, "Before executing this test, the plc must be connected. Check constructor.");
 
-            TestClassWithArrays tc = new TestClassWithArrays();
-            tc.Bool = true;
+            TestClassWithArrays tc = new TestClassWithArrays
+            {
+                Bool = true
+            };
             tc.BoolValues[1] = true;
             tc.Int = int.MinValue;
             tc.Ints[0] = int.MinValue;
@@ -801,9 +824,11 @@ namespace S7.Net.UnitTest
         {
             Assert.IsTrue(plc.IsConnected, "Before executing this test, the plc must be connected. Check constructor.");
 
-            TestClassWithCustomType tc = new TestClassWithCustomType();
-            tc.Int = int.MinValue;
-            tc.CustomType = new CustomType();
+            TestClassWithCustomType tc = new TestClassWithCustomType
+            {
+                Int = int.MinValue,
+                CustomType = new CustomType()
+            };
             tc.CustomType.Bools[1] = true;
             tc.CustomTypes[0] = new CustomType();
             tc.CustomTypes[1] = new CustomType();
@@ -865,14 +890,14 @@ namespace S7.Net.UnitTest
             var dataItems = new List<byte>();
             for (int i = 0; i < count; i++)
             {
-                dataItems.Add((byte)(i%256));
+                dataItems.Add((byte)(i % 256));
             }
 
             plc.WriteBytes(DataType.DataBlock, 2, 0, dataItems.ToArray());
 
             var res = plc.ReadBytes(DataType.DataBlock, 2, 0, count);
 
-            for (int x = 0; x < count; x++) 
+            for (int x = 0; x < count; x++)
             {
                 Assert.AreEqual(x % 256, res[x]);
             }
@@ -883,8 +908,10 @@ namespace S7.Net.UnitTest
         {
             Assert.IsTrue(plc.IsConnected, "Before executing this test, the plc must be connected. Check constructor.");
 
-            var tc = new TestSmallClass();
-            tc.Bool1 = true;
+            var tc = new TestSmallClass
+            {
+                Bool1 = true
+            };
 
             plc.WriteClass(tc, DB2);
             var tc2 = plc.ReadClass<TestSmallClass>(DB2);
@@ -895,22 +922,53 @@ namespace S7.Net.UnitTest
         #endregion
 
         #region Private methods
-
         private static void ShutDownServiceS7oiehsx64()
         {
-            try
+            ServiceController[] services = ServiceController.GetServices();
+            var service = services.FirstOrDefault(s => s.ServiceName == "s7oiehsx64");
+            if (service != null)
             {
-                ServiceController sc = new ServiceController("s7oiehsx64");
-                switch (sc.Status)
+                if (service.Status == ServiceControllerStatus.Running)
                 {
-                    case ServiceControllerStatus.Running:
-                        sc.Stop();
-                        break;
+                    service.Stop();
                 }
             }
-            catch { } // service not found
         }
 
+        #region IDisposable Support
+        private bool disposedValue = false; // To detect redundant calls
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    plc.Close();
+                }
+
+                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
+                // TODO: set large fields to null.
+
+                disposedValue = true;
+            }
+        }
+
+        // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
+        // ~S7NetTests() {
+        //   // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+        //   Dispose(false);
+        // }
+
+        // This code added to correctly implement the disposable pattern.
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(true);
+            // TODO: uncomment the following line if the finalizer is overridden above.
+            // GC.SuppressFinalize(this);
+        }
+        #endregion
         #endregion
     }
 }
